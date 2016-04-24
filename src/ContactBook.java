@@ -1,12 +1,11 @@
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Scanner;
 import java.util.TreeSet;
 
 public class ContactBook {
 	private TreeSet<Contact> ContactIndex;
+	private final static String ls = System.getProperty("line.separator");
 	
 	public ContactBook(){
 		ContactIndex = new TreeSet<Contact>(new ChainContactComparator(new CompareFirstName(), new CompareLastName(), new CompareEmail(), new ComparePhoneNumber()));
@@ -21,18 +20,17 @@ public class ContactBook {
 		
 		File CB = new File("Contacts.txt");
 		PrintWriter pw = new PrintWriter(CB);
-		for(Contact c: ContactIndex){
-			pw.write(c.toString()+"\r\n");
-		}
+		
+		pw.write(this.toString());
+		
 		pw.close();
 	}
 	
 	public String toString(){
 		String retVal = "";
 		for(Contact c : ContactIndex){
-			retVal += c.toString() +"\n";
+			retVal += c.toString() + ls ;
 		}
 		return retVal;
 	}
-	
 }

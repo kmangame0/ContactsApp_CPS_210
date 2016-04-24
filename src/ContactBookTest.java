@@ -9,6 +9,7 @@ public class ContactBookTest {
 		ContactBook cb = new ContactBook();
 //		
 		List<Contact> contactAl = new ArrayList<Contact>();
+//		
 		Contact Jessie = new Contact("Jessie", "Brown", "8452368874", "JessieBrown234@gmail.com");
 		Contact Bill = new Contact("Bill", "Smith", "9893452232", "SBill22@yahoo.com");
 		Contact James  = new Contact("James", "Gilbert", "9893452232", "SBill22@yahoo.com");
@@ -20,8 +21,18 @@ public class ContactBookTest {
 		cb.addContactToBook(James);
 		cb.addContactToBook(b);
 		
-		cb.WriteCBToFile();
-//		
+		//cb.WriteCBToFile();
+		
+		
+		Collections.sort(contactAl, new ChainContactComparator(
+				new CompareFirstName(), new CompareLastName(), new CompareEmail(), new ComparePhoneNumber()));
+		System.out.println();
+		for(Contact c: contactAl){
+			System.out.println(c);
+		}
+	}
+	
+	public void obsolete() {
 //		cb.WriteCBToFile();
 //		contactAl.add(Jessie);
 //		contactAl.add(Bill);
@@ -31,15 +42,5 @@ public class ContactBookTest {
 //		for(Contact c: contactAl){
 //			System.out.println(c);
 //		}
-//		Collections.sort(contactAl, new ChainContactComparator(
-//				new CompareFirstName(), new CompareLastName(), new CompareEmail(), new ComparePhoneNumber()));
-//		System.out.println();
-//		for(Contact c: contactAl){
-//			System.out.println(c);
-//		}
-
-		
-	
 	}
-
 }
