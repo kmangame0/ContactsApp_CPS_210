@@ -1,28 +1,24 @@
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Scanner;
-import java.util.logging.Handler;
-import java.util.regex.Pattern;
-
-import javax.swing.GroupLayout.Alignment;
-
+import java.io.InputStreamReader;
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBase;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollBar;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Border;
@@ -37,36 +33,26 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
-import javafx.util.BuilderFactory;
+import javafx.util.Callback;
 public class UI extends Application{
 	private static ContactBook cb;
-	Contact selected;
-	Contact person;
-	StackPane MainPane;
-	GridPane CenterGridPane;
-	VBox LeftVBox;
-	HBox LeftPane;
-	StackPane RightPane;
-	HBox internalRightVBoxMenu;
-
+	private static VBox LeftVBox;
+	private static Pane RightPane;
+	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		
-		selected = new Contact(null,null,null,null);
-		
-		MainPane = new StackPane();
-		CenterGridPane = new GridPane();
+		StackPane MainPane = new StackPane();
+		GridPane CenterGridPane = new GridPane();
 		LeftVBox = new VBox();
-		LeftPane = new HBox();
-		RightPane = new StackPane();
-		internalRightVBoxMenu = new HBox();
+		RightPane = new Pane();
+		HBox internalRightVBoxMenu = new HBox();
+		
 		
 		CenterGridPane.setAlignment(Pos.CENTER);
 		LeftVBox.setAlignment(Pos.CENTER);
-		RightPane.setAlignment(Pos.CENTER);
+		//RightVBox.setAlignment(Pos.CENTER);
 		CenterGridPane.setHgap(25);
 		CenterGridPane.setVgap(10);
 		//CenterGridPane.scaleXProperty().bind(MainPane.layoutXProperty());
@@ -75,28 +61,26 @@ public class UI extends Application{
 	
 		
 		BackgroundFill bckfill = new BackgroundFill(Color.ANTIQUEWHITE, null, new Insets(5));
-		BackgroundFill AntiqueBackFill = new BackgroundFill(Color.ANTIQUEWHITE, null, new Insets(0));
+		BackgroundFill AntiqueBackFill = new BackgroundFill(Color.LINEN, null, new Insets(0));
 		Background AntiqueBackground = new Background(AntiqueBackFill);
 		Background Gridbackground = new Background(bckfill);
 		CenterGridPane.setBackground(Gridbackground);
 		MainPane.setBackground(AntiqueBackground);
-		LeftPane.setBackground(AntiqueBackground);
 		LeftVBox.setBackground(AntiqueBackground);
 		RightPane.setBackground(AntiqueBackground);
 		
 		
+		
+		
 		BorderStroke bdstk = new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(2));
 		Border bd = new Border(bdstk);
-		LeftPane.setBorder(bd);
-		LeftPane.setPadding(new Insets(15));
-		LeftVBox.setPadding(new Insets(15));
+		LeftVBox.setBorder(bd);
 		RightPane.setBorder(bd);
 		 
 		//Labels for the HBox and VBox
 		
-		Font titleFont = Font.font("Lato Semibold", FontWeight.EXTRA_BOLD, 25);
-		Label CurrentContacts = new Label("Contacts");
-		CurrentContacts.setTextAlignment(TextAlignment.CENTER);
+		Font titleFont = Font.font("Lato Semibold", FontWeight.EXTRA_BOLD, 30);
+		Label CurrentContacts = new Label("Current Contacts");
 		Label ContactInfo = new Label("Contact Information");
 		CurrentContacts.setUnderline(true);
 		ContactInfo.setUnderline(true);
@@ -110,24 +94,12 @@ public class UI extends Application{
 		
 		//Add Delete Buttons
 		HBox buttonHBox = new HBox();
+		
 		Button AddContact = new Button("Add Contact");
 		AddContact.setOnAction(new AddHandler());
 		
 		Button DeleteContact = new Button("Delete Contact");
-		DeleteContact.setOnAction((event)->{
-			try {
-				if(selected.FirstName!=null && selected.LastName!=null){
-					cb.removefromBookandFile(selected);
-			}
-			else{
-				UserMessage("No Contact Selected", "To Delete a Contact, You Must First Select What Contact To Delete");
-			}
-				cb.removefromBookandFile(selected);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		});
+		DeleteContact.setOnAction(new DeleteHandler());
 		
 		Button EditContact = new Button("Edit Contact");
 		
@@ -140,59 +112,60 @@ public class UI extends Application{
 		//end add delete buttons
 		MainPane.getChildren().add(CenterGridPane);
 		
-		//CenterGridPane.setGridLinesVisible(true);
+		CenterGridPane.setGridLinesVisible(true);
+		
+		
 		CenterGridPane.add(CurrentContacts, 0, 0);
 		CenterGridPane.add(ContactInfo, 1, 0);
-		CenterGridPane.add(LeftPane, 0, 1);
+		CenterGridPane.add(LeftVBox, 0, 1);
 		CenterGridPane.add(RightPane, 1, 1);
 		CenterGridPane.add(buttonHBox, 1, 2);
 		
-		LeftPane.getChildren().add(LeftVBox);
 	
-		//Label for contact information
-		Label txf = new Label();
-		Font displayContactFont = new Font(20);
-		txf.setFont(displayContactFont);
-		txf.setWrapText(true);
-		txf.setTextAlignment(TextAlignment.CENTER);
+	
+		//Textfeild for contact information
+		TextArea txf = new TextArea();
 		
 		txf.textProperty();
-//		txf.setEditable(false);
-		txf.setText("Contact Information Displayed here");
+		txf.setEditable(false);
+		txf.setText("Contact information is here");
 		txf.setMinWidth(RightPane.getWidth());
 		txf.setMinHeight(RightPane.getHeight());
-	
-		//scroll bar for contact buttons
-		ScrollBar scrl = new ScrollBar();
-		scrl.setOrientation(Orientation.VERTICAL);
-		scrl.setMin(0);
-		scrl.setMax(200);
-		scrl.setValue(0);
-//		scrl.setPrefHeight(LeftVBox.getHeight());
-		scrl.setLayoutX(LeftPane.getWidth() -10);
-		LeftPane.getChildren().add(scrl);
-	
-		scrl.valueProperty().addListener(new ChangeListener<Number>() {
-            public void changed(ObservableValue<? extends Number> ov,
-                Number old_val, Number new_val) {
-                    LeftVBox.setLayoutY(-new_val.doubleValue());
-            }
-        });
 		
+		ListView<Contact> listView = new ListView<Contact>();
+		listView.setItems(FXCollections.observableArrayList(cb.GetContacts()));
 		
-		for(Contact c : cb.getIndex()){
-			Button ContactButton = new Button(c.FirstName +" "+c.LastName);
-			LeftVBox.getChildren().add(ContactButton);
-			ContactButton.setOnAction((event)->{
-				txf.setText(c.toString());
-				selected = c;
-			});
-		}
-		LeftVBox.setSpacing(5);
+		listView.setCellFactory(new Callback<ListView<Contact>, ListCell<Contact>>() {
+
+			@Override
+			public ListCell<Contact> call(ListView<Contact> param) {
+			
+				ListCell<Contact> cell = new ListCell<Contact>() {
+					
+					@Override
+					protected void updateItem(Contact c, boolean bln) {
+                        super.updateItem(c, bln);
+                        if (c != null) {
+                            setText(c.getLastName() + ", " + c.getFirstName());
+                        }
+                    }
+				};
+				cell.setOnMouseClicked(new EventHandler<MouseEvent>() {
+
+					@Override
+					public void handle(MouseEvent event) {
+						// TODO Auto-generated method stub
+						
+					}
+					
+				});
+				return cell;
+			}
+		});
+		
+		LeftVBox.getChildren().add(listView);
 		
 		MainPane.setPadding(new Insets(10,10,10,10));
-		
-		
 		
 		//internalRightVBoxMenu.getChildren().addAll(AddContact, DeleteContact);
 		internalRightVBoxMenu.setAlignment(Pos.BOTTOM_CENTER);
@@ -200,20 +173,20 @@ public class UI extends Application{
 		RightPane.getChildren().add(internalRightVBoxMenu);
 		
 		
-		Scene scene = new Scene(MainPane, 600, 400);	
+		
+		
+		Scene scene = new Scene(MainPane, 700, 500);	
 		primaryStage.setTitle("Contact Book");
 		primaryStage.setScene(scene);
 		primaryStage.show();
 		
 	}
 	
-	
 	public class AddHandler implements EventHandler<ActionEvent>{
 		@Override
 		public void handle(ActionEvent event) {
 			try {
-				Contact blank = new Contact(null,null,null,null);
-				alterPrompt(blank);
+				addPrompt();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -224,49 +197,48 @@ public class UI extends Application{
 	public class EditHandler implements EventHandler<ActionEvent>{
 		@Override
 		public void handle(ActionEvent event) {
-			try{
-				if(selected.FirstName!=null){
-					alterPrompt(selected);
-				}
-				else{
-					UserMessage("No Contact Selected", "To edit a Contact, You Must First Select What Contact To Edit");
-				}
-				
-			}catch (IOException e){
-				e.printStackTrace();
-			}
+			editContact();
 		}
 	}
 	
+	public class DeleteHandler implements EventHandler<ActionEvent>{
+		@Override
+		public void handle(ActionEvent e){
+			deleteContact();
+		}
+	}
 	
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) {
 		cb = new ContactBook();
-		File fi = new File("Contacts.txt");
 		
-		if(fi.exists()){
-			Scanner sc = new Scanner(fi);
-			sc.useDelimiter(Pattern.compile(",|(\r\n)"));
-			while(sc.hasNext()){
-				String f; String l; String e; String p;
-				f = sc.next();
-				l = sc.next();
-				e = sc.next();
-				p = sc.next();
-				Contact c = new Contact(f,l,e,p);
+		try {
+			FileInputStream fstream = new FileInputStream("Contacts.txt");
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String s;
+			while((s = br.readLine()) != null) {
+				String[] tokens = s.split(",");
+				Contact c = new Contact(tokens[0], tokens[1], tokens[2], tokens[3]);
 				cb.addContactToBook(c);
-				System.out.println(c.toString());
 			}
+			in.close();
+		}catch(Exception e) {
+			System.out.println(e.getStackTrace());
 		}
-		else{
-			System.out.println("Creating new Contacts File");
-		}
-		
 		launch(args);
 	}
 
-	
-	public void alterPrompt(Contact c) throws IOException{
+	public void deleteContact(){
 		
+		
+		cb.removeContactFromBook(null);
+	}
+	
+	public void editContact(){
+		System.out.println("Editing a contact");
+	}
+	
+	public void addPrompt() throws IOException{
 		Stage popup = new Stage();
 		GridPane MainPane = new GridPane();
 		MainPane.setPadding(new Insets(10));
@@ -277,14 +249,6 @@ public class UI extends Application{
 		Label PhoneNumber = new Label("Phone Number");		TextField TXPHONENUMBER = new TextField();
 		
 		Button FinalizeAdd = new Button("Done");
-			if(c.FirstName!=null){
-			
-			TXFNAME.setText(c.FirstName);
-			TXLNAME.setText(c.LastName);
-			TXEMAIL.setText(c.Email);
-			TXPHONENUMBER.setText(c.PhoneNumber);
-			}
-		
 		
 		FinalizeAdd.setOnAction((event) -> {
 			String txfFirstName = TXFNAME.getText();
@@ -293,23 +257,15 @@ public class UI extends Application{
 			String txfPhoneNumber = TXPHONENUMBER.getText();
 			
 			try {
-				Contact person = new Contact(txfFirstName, txfLastName, txfEmail, txfPhoneNumber);
-				cb.addContactToBook(person);
+				Contact c = new Contact(txfFirstName, txfLastName, txfEmail, txfPhoneNumber);
+				cb.addContactToBook(c);
 				cb.WriteCBToFile();
 				System.out.println(cb.toString());
-				
-				
-				
-				UserMessage("Confirmation", person.FirstName +" "+person.LastName +" has been Added");
-				
-				
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			popup.close();
-			
-			
 		});
 		
 		MainPane.add(FName, 0, 0);	MainPane.add(TXFNAME, 1, 0);
@@ -317,23 +273,10 @@ public class UI extends Application{
 		MainPane.add(Email, 0, 2);	MainPane.add(TXEMAIL, 1, 2);
 		MainPane.add(PhoneNumber, 0, 3);	MainPane.add(TXPHONENUMBER, 1, 3);
 		MainPane.add(FinalizeAdd, 1, 4);
-		
 
 		Scene scene = new Scene(MainPane, 280, 180);	
 		popup.setTitle("Add Contact");
 		popup.setScene(scene);
 		popup.show();
-	}
-	public void UserMessage(String Title, String message){
-		Stage s = new Stage();
-		StackPane p = new StackPane();
-		p.setAlignment(Pos.CENTER);
-		Label label = new Label(message);
-		label.setAlignment(Pos.CENTER);
-		p.getChildren().add(label);
-		Scene cscene = new Scene(p, 400,20);
-		s.setTitle(Title);
-		s.setScene(cscene);
-		s.show();
 	}
 }

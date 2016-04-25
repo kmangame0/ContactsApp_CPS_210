@@ -1,65 +1,46 @@
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Iterator;
-import java.util.Scanner;
 import java.util.TreeSet;
 
-public class ContactBook{
+public class ContactBook {
 	private TreeSet<Contact> ContactIndex;
-	File CB = new File("Contacts.txt");
+	private final static String ls = System.getProperty("line.separator");
 	
 	public ContactBook(){
-		ContactIndex = new TreeSet<Contact>(new ChainContactComparator(new CompareFirstName(), new CompareLastName(), new CompareEmail(), new ComparePhoneNumber()));
-		CB = new File("Contacts.txt");
+		ContactIndex = new TreeSet<Contact>(new ChainContactComparator
+				(new CompareFirstName(), new CompareLastName(), 
+				 new CompareEmail(), new ComparePhoneNumber()));
 	}
 	
-	public void addContactToBook(Contact c) throws IOException{
+	public void addContactToBook(Contact c) {
 		ContactIndex.add(c);
-		
 	}
-	public void removefromBookandFile(Contact c) throws IOException{
+	
+	public void removeContactFromBook(Contact c) {
 		ContactIndex.remove(c);
-		
-		File temp = new File("TempTestFile.txt");
-		BufferedReader reader = new BufferedReader(new FileReader(CB));
-		BufferedWriter writer = new BufferedWriter(new FileWriter(temp));
-		
-		String cl;
-		
-		while((cl = reader.readLine()) != null){
-			if(cl.contains(c.FirstName)&& cl.contains(c.LastName) && cl.contains(c.Email)&& cl.contains(c.PhoneNumber)){
-				continue;
-			}
-			writer.write(cl);
-		}
-		writer.close();
-		boolean successful = temp.renameTo(CB);
-		System.out.println(successful);
-		
 	}
 	
 	public void WriteCBToFile() throws IOException{
-		
+		File CB = new File("Contacts.txt");
 		PrintWriter pw = new PrintWriter(CB);
-		for(Contact c: ContactIndex){
-			pw.write(c.toString()+"\r\n");
-		}
+		
+		pw.write(this.toString());
+		
 		pw.close();
 	}
 	
 	public String toString(){
-		String retVal = "";
+		StringBuilder retVal = new StringBuilder();
+		
 		for(Contact c : ContactIndex){
-			retVal += c.toString() +"\n";
+			retVal.append(c.toString().trim() + ls);
 		}
-		return retVal;
+		retVal.setLength(retVal.length()-1);
+		return retVal.toString();
 	}
-	public TreeSet<Contact> getIndex(){
-		return ContactIndex;
+	
+	public Contact[] GetContacts() {
+		return ContactIndex.toArray(new Contact[0]);
 	}
 }
