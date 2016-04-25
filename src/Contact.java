@@ -14,10 +14,6 @@ public class Contact{
 	}
 
 	public String toString(){
-		return FirstName +", " +LastName +", " +PhoneNumber +", " +Email ;
-		
+		return FirstName.trim() + "," + LastName.trim() + "," + PhoneNumber.trim() + "," + Email.trim();
 	}
-
-	
-	
 }

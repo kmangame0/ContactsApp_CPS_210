@@ -1,7 +1,11 @@
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Scanner;
 import java.util.logging.Handler;
 import javafx.application.Application;
@@ -30,7 +34,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
-import javafx.util.BuilderFactory;
 public class UI extends Application{
 	private static ContactBook cb;
 	
@@ -177,26 +180,40 @@ public class UI extends Application{
 		}
 	}
 	
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) {
 		cb = new ContactBook();
-		File fi = new File("Contacts.txt");
+		//File fi = new File("Contacts.txt");
 		
-		if(fi.exists()){
-			Scanner sc = new Scanner(fi);
-			sc.useDelimiter("[,]");
-			while(sc.hasNextLine()){
-				String f; String l; String e; String p;
-				f = sc.next();
-				l = sc.next();
-				e = sc.next();
-				p = sc.next();
-				Contact c = new Contact(f,l,e,p);
+		try {
+			FileInputStream fstream = new FileInputStream("Contacts.txt");
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String s;
+			while((s = br.readLine()) != null) {
+				String[] tokens = s.split(",");
+				Contact c = new Contact(tokens[0], tokens[1], tokens[2], tokens[3]);
 				cb.addContactToBook(c);
-				System.out.println(c.toString());
 			}
+			in.close();
+		}catch(Exception e) {
+			System.out.println(e.getStackTrace());
 		}
 		
-	
+		
+//		if(fi.exists()){
+//			Scanner sc = new Scanner(fi);
+//			sc.useDelimiter("[,]");
+//			while(sc.hasNextLine()){
+//				String f; String l; String e; String p;
+//				f = sc.next();
+//				l = sc.next();
+//				e = sc.next();
+//				p = sc.next();
+//				Contact c = new Contact(f,l,e,p);
+//				cb.addContactToBook(c);
+//				System.out.println(c.toString());
+//			}
+//		}
 		launch(args);
 	}
 	

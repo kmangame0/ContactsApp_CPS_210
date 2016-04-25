@@ -11,13 +11,15 @@ public class ContactBook {
 		ContactIndex = new TreeSet<Contact>(new ChainContactComparator(new CompareFirstName(), new CompareLastName(), new CompareEmail(), new ComparePhoneNumber()));
 	}
 	
-	public void addContactToBook(Contact c) throws IOException{
+	public void addContactToBook(Contact c) {
 		ContactIndex.add(c);
-		
+	}
+	
+	public void removeContact(Contact c) {
+		ContactIndex.remove(c);
 	}
 	
 	public void WriteCBToFile() throws IOException{
-		
 		File CB = new File("Contacts.txt");
 		PrintWriter pw = new PrintWriter(CB);
 		
@@ -27,10 +29,12 @@ public class ContactBook {
 	}
 	
 	public String toString(){
-		String retVal = "";
+		StringBuilder retVal = new StringBuilder();
+		
 		for(Contact c : ContactIndex){
-			retVal += c.toString() + ls ;
+			retVal.append(c.toString().trim() + ls);
 		}
-		return retVal;
+		retVal.setLength(retVal.length()-1);
+		return retVal.toString();
 	}
 }
