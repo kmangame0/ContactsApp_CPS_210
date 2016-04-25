@@ -1,24 +1,24 @@
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Scanner;
-import java.util.logging.Handler;
 import javafx.application.Application;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBase;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Border;
@@ -34,16 +34,19 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 public class UI extends Application{
 	private static ContactBook cb;
+	private static VBox LeftVBox;
+	private static Pane RightPane;
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		
 		StackPane MainPane = new StackPane();
 		GridPane CenterGridPane = new GridPane();
-		VBox LeftVBox = new VBox();
-		Pane RightPane = new Pane();
+		LeftVBox = new VBox();
+		RightPane = new Pane();
 		HBox internalRightVBoxMenu = new HBox();
 		
 		
@@ -91,6 +94,7 @@ public class UI extends Application{
 		
 		//Add Delete Buttons
 		HBox buttonHBox = new HBox();
+		
 		Button AddContact = new Button("Add Contact");
 		AddContact.setOnAction(new AddHandler());
 		
@@ -127,17 +131,41 @@ public class UI extends Application{
 		txf.setText("Contact information is here");
 		txf.setMinWidth(RightPane.getWidth());
 		txf.setMinHeight(RightPane.getHeight());
-	
 		
+		ListView<Contact> listView = new ListView<Contact>();
+		listView.setItems(FXCollections.observableArrayList(cb.GetContacts()));
 		
-	
-		LeftVBox.getChildren().add(txf);
-	
+		listView.setCellFactory(new Callback<ListView<Contact>, ListCell<Contact>>() {
+
+			@Override
+			public ListCell<Contact> call(ListView<Contact> param) {
+			
+				ListCell<Contact> cell = new ListCell<Contact>() {
+					
+					@Override
+					protected void updateItem(Contact c, boolean bln) {
+                        super.updateItem(c, bln);
+                        if (c != null) {
+                            setText(c.getLastName() + ", " + c.getFirstName());
+                        }
+                    }
+				};
+				cell.setOnMouseClicked(new EventHandler<MouseEvent>() {
+
+					@Override
+					public void handle(MouseEvent event) {
+						// TODO Auto-generated method stub
+						
+					}
+					
+				});
+				return cell;
+			}
+		});
 		
+		LeftVBox.getChildren().add(listView);
 		
 		MainPane.setPadding(new Insets(10,10,10,10));
-		
-		
 		
 		//internalRightVBoxMenu.getChildren().addAll(AddContact, DeleteContact);
 		internalRightVBoxMenu.setAlignment(Pos.BOTTOM_CENTER);
@@ -182,7 +210,6 @@ public class UI extends Application{
 	
 	public static void main(String[] args) {
 		cb = new ContactBook();
-		//File fi = new File("Contacts.txt");
 		
 		try {
 			FileInputStream fstream = new FileInputStream("Contacts.txt");
@@ -198,37 +225,19 @@ public class UI extends Application{
 		}catch(Exception e) {
 			System.out.println(e.getStackTrace());
 		}
-		
-		
-//		if(fi.exists()){
-//			Scanner sc = new Scanner(fi);
-//			sc.useDelimiter("[,]");
-//			while(sc.hasNextLine()){
-//				String f; String l; String e; String p;
-//				f = sc.next();
-//				l = sc.next();
-//				e = sc.next();
-//				p = sc.next();
-//				Contact c = new Contact(f,l,e,p);
-//				cb.addContactToBook(c);
-//				System.out.println(c.toString());
-//			}
-//		}
 		launch(args);
 	}
-	
-	public void createContact(){
-		//Flesh out
-		
-		System.out.println("Adding new contact");
-	}
+
 	public void deleteContact(){
-		//flesh out
-		System.out.println("Deleting a contact");
+		
+		
+		cb.removeContactFromBook(null);
 	}
+	
 	public void editContact(){
 		System.out.println("Editing a contact");
 	}
+	
 	public void addPrompt() throws IOException{
 		Stage popup = new Stage();
 		GridPane MainPane = new GridPane();
@@ -240,7 +249,6 @@ public class UI extends Application{
 		Label PhoneNumber = new Label("Phone Number");		TextField TXPHONENUMBER = new TextField();
 		
 		Button FinalizeAdd = new Button("Done");
-		
 		
 		FinalizeAdd.setOnAction((event) -> {
 			String txfFirstName = TXFNAME.getText();
@@ -265,8 +273,6 @@ public class UI extends Application{
 		MainPane.add(Email, 0, 2);	MainPane.add(TXEMAIL, 1, 2);
 		MainPane.add(PhoneNumber, 0, 3);	MainPane.add(TXPHONENUMBER, 1, 3);
 		MainPane.add(FinalizeAdd, 1, 4);
-		
-		
 
 		Scene scene = new Scene(MainPane, 280, 180);	
 		popup.setTitle("Add Contact");

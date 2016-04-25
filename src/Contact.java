@@ -12,6 +12,15 @@ public class Contact{
 		this.PhoneNumber = PhoneNumber;
 		this.Email = Email;
 	}
+	
+	public String getFirstName() {
+		return FirstName;
+	}
+
+	public String getLastName() {
+		return LastName;
+	}
+	
 
 	public String toString(){
 		return FirstName.trim() + "," + LastName.trim() + "," + PhoneNumber.trim() + "," + Email.trim();

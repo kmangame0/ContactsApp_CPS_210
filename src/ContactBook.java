@@ -8,14 +8,16 @@ public class ContactBook {
 	private final static String ls = System.getProperty("line.separator");
 	
 	public ContactBook(){
-		ContactIndex = new TreeSet<Contact>(new ChainContactComparator(new CompareFirstName(), new CompareLastName(), new CompareEmail(), new ComparePhoneNumber()));
+		ContactIndex = new TreeSet<Contact>(new ChainContactComparator
+				(new CompareFirstName(), new CompareLastName(), 
+				 new CompareEmail(), new ComparePhoneNumber()));
 	}
 	
 	public void addContactToBook(Contact c) {
 		ContactIndex.add(c);
 	}
 	
-	public void removeContact(Contact c) {
+	public void removeContactFromBook(Contact c) {
 		ContactIndex.remove(c);
 	}
 	
@@ -36,5 +38,9 @@ public class ContactBook {
 		}
 		retVal.setLength(retVal.length()-1);
 		return retVal.toString();
+	}
+	
+	public Contact[] GetContacts() {
+		return ContactIndex.toArray(new Contact[0]);
 	}
 }
