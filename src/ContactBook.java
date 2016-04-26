@@ -1,32 +1,38 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Iterator;
+import java.util.Scanner;
 import java.util.TreeSet;
 
-public class ContactBook {
+public class ContactBook{
 	private TreeSet<Contact> ContactIndex;
+	File CB = new File("Contacts.txt");
 	private final static String ls = System.getProperty("line.separator");
 	
 	public ContactBook(){
-		ContactIndex = new TreeSet<Contact>(new ChainContactComparator
-				(new CompareFirstName(), new CompareLastName(), 
-				 new CompareEmail(), new ComparePhoneNumber()));
+		ContactIndex = new TreeSet<Contact>(new ChainContactComparator(new CompareLastName(), new CompareFirstName(), new CompareEmail(), new ComparePhoneNumber()));
+		CB = new File("Contacts.txt");
 	}
 	
-	public void addContactToBook(Contact c) {
+	public void addContactToBook(Contact c) throws IOException{
 		ContactIndex.add(c);
+		
 	}
-	
-	public void removeContactFromBook(Contact c) {
+	public void removefromBookandFile(Contact c) throws IOException{
 		ContactIndex.remove(c);
+		WriteCBToFile();
 	}
 	
 	public void WriteCBToFile() throws IOException{
-		File CB = new File("Contacts.txt");
 		PrintWriter pw = new PrintWriter(CB);
-		
-		pw.write(this.toString());
-		
+		for(Contact c: ContactIndex){
+			pw.write(c.toString()+"\r\n");
+		}
 		pw.close();
 	}
 	
@@ -40,7 +46,11 @@ public class ContactBook {
 		return retVal.toString();
 	}
 	
-	public Contact[] GetContacts() {
+	public TreeSet<Contact> getIndex(){
+		return ContactIndex;
+	}
+	
+	public Contact[] getContactArray(){
 		return ContactIndex.toArray(new Contact[0]);
 	}
 }

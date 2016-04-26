@@ -6,8 +6,8 @@ public class ChainContactComparator implements Comparator<Contact>{
 
 	private List<Comparator<Contact>> listComparators;
 	
-	public ChainContactComparator(Comparator <Contact> CompFName, Comparator <Contact> CompLName, Comparator <Contact> CompEmail, Comparator <Contact> CompPhoneNumber){
-		this.listComparators = Arrays.asList(CompFName,CompLName,CompEmail,CompPhoneNumber);
+	public ChainContactComparator(Comparator <Contact> CompLName, Comparator <Contact> CompFName, Comparator <Contact> CompEmail, Comparator <Contact> CompPhoneNumber){
+		this.listComparators = Arrays.asList(CompLName,CompFName,CompEmail,CompPhoneNumber);
 		
 	}
 	@Override
