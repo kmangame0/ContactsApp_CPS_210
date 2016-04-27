@@ -51,11 +51,13 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.BuilderFactory;
 import javafx.util.Callback;
 
 public class UI extends Application {
+
 	public static final Pattern VALID_NAME_REGEX = 
 		    Pattern.compile("^[\\p{L}.'-]+$", Pattern.CASE_INSENSITIVE);
 	public static final Pattern VALID_EMAIL_ADDRESS_REGEX = 
@@ -64,22 +66,23 @@ public class UI extends Application {
 			Pattern.compile("^[1-9][0-9]{10}");
 	ListView<Contact> LeftlistView = new ListView<Contact>();
 	ListView<String> RightlistView = new ListView<String>();
+	private Stage primaryStage;
 	private static ContactBook cb;
-	Contact blank;
-	Contact selected;
-	Contact person;
-	StackPane MainPane;
-	GridPane CenterGridPane;
-	VBox LeftVBox;
-	StackPane RightPane;
-	HBox internalRightVBoxMenu;
+	private Contact blank;
+	private Contact selected;
+	private Contact person;
+	private StackPane MainPane;
+	private GridPane CenterGridPane;
+	private VBox LeftVBox;
+	private StackPane RightPane;
+	private HBox internalRightVBoxMenu;
 	
 	private ListCell<Contact> cell;
 	ListCell <String> rightcell;
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-
+		this.primaryStage=primaryStage;
 		blank = new Contact(null, null, null, null);
 		selected = blank;
 
@@ -98,14 +101,14 @@ public class UI extends Application {
 		
 
 		
-		BackgroundFill AntiqueBackFill = new BackgroundFill(Color.ANTIQUEWHITE, null, new Insets(0));
-		Background AntiqueBackground = new Background(AntiqueBackFill);
+		BackgroundFill bkfil = new BackgroundFill(Color.LIGHTSTEELBLUE, null, new Insets(0));
+		Background Background = new Background(bkfil);
 		
-		CenterGridPane.setBackground(AntiqueBackground);
-		MainPane.setBackground(AntiqueBackground);
-		LeftVBox.setBackground(AntiqueBackground);
-		LeftVBox.setBackground(AntiqueBackground);
-		RightPane.setBackground(AntiqueBackground);
+		CenterGridPane.setBackground(Background);
+		MainPane.setBackground(Background);
+		LeftVBox.setBackground(Background);
+		LeftVBox.setBackground(Background);
+		RightPane.setBackground(Background);
 
 		BorderStroke bdstk = new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(2));
 		Border bd = new Border(bdstk);
@@ -126,10 +129,7 @@ public class UI extends Application {
 		ContactInfo.setFont(titleFont);
 
 		// end label
-
-		LeftVBox.setPrefHeight(300);
 		
-
 		setLeftListView();
 		LeftVBox.getChildren().add(LeftlistView);
 
@@ -224,7 +224,7 @@ public class UI extends Application {
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String s;
 			while ((s = br.readLine()) != null) {
-				String[] tokens = s.split(",");
+				String[] tokens = s.split(", ");
 				Contact c = new Contact(tokens[0], tokens[1], tokens[2], tokens[3]);
 				cb.addContactToBook(c);
 			}
@@ -240,8 +240,11 @@ public class UI extends Application {
 
 		Stage popup = new Stage();
 		popup.getIcons().add(new Image("file:cbicon.png"));
+		popup.initModality(Modality.WINDOW_MODAL);
+		popup.initOwner(primaryStage);
 		GridPane MainPane = new GridPane();
 		MainPane.setPadding(new Insets(10));
+		MainPane.setVgap(5);
 		
 		Label FName = new Label("First Name");
 		TextField TXFNAME = new TextField();
@@ -268,7 +271,8 @@ public class UI extends Application {
 		        return (TXFNAME.getText().isEmpty())
 		                || (TXLNAME.getText().isEmpty())
 		                || (TXEMAIL.getText().isEmpty())
-		                || (TXPHONENUMBER.getText().isEmpty());
+//		                || (TXPHONENUMBER.getText().isEmpty())
+		        		||	(!(TXPHONENUMBER.getText().length() == 10));
 		    }
 		};
 		
@@ -280,10 +284,17 @@ public class UI extends Application {
 			TXLNAME.setText(c.LastName.trim());
 			TXEMAIL.setText(c.Email.trim());
 			TXPHONENUMBER.setText(c.PhoneNumber.trim());
-			cb.removefromBookandFile(c);
 		}
 		
 		FinalizeAdd.setOnAction((event) -> {
+			if(!selected.equals(blank)){
+				
+				try {
+					cb.removefromBookandFile(c);
+				} catch (Exception e1) {
+					e1.printStackTrace();
+			}
+			}
 			String txfFirstName = TXFNAME.getText();
 			String txfLastName = TXLNAME.getText();
 			String txfEmail = TXEMAIL.getText();
@@ -294,8 +305,6 @@ public class UI extends Application {
 				cb.addContactToBook(person);
 				cb.WriteCBToFile();
 				setLeftListView();
-				// System.out.println(cb.toString());
-
 				UserMessage("Confirmation", person.FirstName + " " + person.LastName + " has been Added");
 
 			} catch (Exception e) {
@@ -316,30 +325,17 @@ public class UI extends Application {
 		MainPane.add(TXPHONENUMBER, 1, 3);
 		MainPane.add(FinalizeAdd, 1, 4);
 
-		Scene scene = new Scene(MainPane, 280, 180);
+		Scene scene = new Scene(MainPane, 260, 170);
 		popup.setTitle("Add Contact");
 		popup.setScene(scene);
 		popup.show();
 	}
 	
-//	public static boolean validateName(String name) {
-//		Matcher matcher = VALID_NAME_REGEX.matcher(name);
-//		return matcher.find();
-//	}
-//	
-//	public static boolean validateEmail(String email) {
-//		Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(email);
-//		return matcher.find();
-//	}
-//	
-//	public static boolean validatePhoneNumber(String phoneNumber) {
-//		Matcher matcher = VALID_PHONE_REGEX.matcher(phoneNumber);
-//		return matcher.find();
-//	}
-	
 	public void UserMessage(String Title, String message) {
 		Stage s = new Stage();
 		s.getIcons().add(new Image("file:cbicon.png"));
+		s.initModality(Modality.WINDOW_MODAL);
+		s.initOwner(primaryStage);
 		StackPane p = new StackPane();
 		p.setAlignment(Pos.CENTER);
 		Label label = new Label(message);
@@ -354,7 +350,6 @@ public class UI extends Application {
 	public void setLeftListView() {
 
 		LeftlistView.setItems(FXCollections.observableArrayList(cb.getContactArray()));
-
 		LeftlistView.setCellFactory(new Callback<ListView<Contact>, ListCell<Contact>>() {
 
 			@Override
@@ -370,8 +365,10 @@ public class UI extends Application {
 						}
 					}
 				};
+				
 				cell.setOnMouseClicked((event) -> {
 					selected = LeftlistView.getSelectionModel().getSelectedItem();
+//					System.out.println(selected.PhoneNumber+"\n" +selected.getFormattedPhoneNumber());
 					setRightListView();
 					
 				});
@@ -391,6 +388,7 @@ public class UI extends Application {
 							{"First Name: " + selected.getFirstName().trim(),"Last Name: "+ selected.getLastName().trim(),
 									"Email: " + selected.getEmail().trim(),"Telephone: " + selected.getFormattedPhoneNumber().trim()}));
 
+			
 			RightlistView.setCellFactory(new Callback<ListView<String>, ListCell<String>>() {
 
 				@Override
@@ -408,9 +406,9 @@ public class UI extends Application {
 					};
 					rightcell.setMouseTransparent(true);
 					rightcell.setFocusTraversable(false);
-					
+					rightcell.setFont(Font.font("Cambria", FontWeight.SEMI_BOLD, 20));
 					rightcell.setTextAlignment(TextAlignment.CENTER);
-					
+					rightcell.setPadding(new Insets(15));
 					return rightcell;
 					
 				}
