@@ -37,12 +37,9 @@ public class Contact{
 		this.Email = Email;
 		
 	}
-
+	
 	public String toString(){
-		return FirstName.trim() +", " +LastName.trim() +", " +Email.trim() +", " +PhoneNumber.trim() ;
+		return FirstName.trim() +", " +LastName.trim() +", " +Email.trim() +", " +PhoneNumber.trim();
 		
 	}
-
-	
-	
 }

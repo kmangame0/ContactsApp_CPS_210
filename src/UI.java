@@ -8,11 +8,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Scanner;
 import java.util.logging.Handler;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.GroupLayout.Alignment;
 
 import javafx.application.Application;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -53,6 +56,12 @@ import javafx.util.BuilderFactory;
 import javafx.util.Callback;
 
 public class UI extends Application {
+	public static final Pattern VALID_NAME_REGEX = 
+		    Pattern.compile("^[\\p{L}.'-]+$", Pattern.CASE_INSENSITIVE);
+	public static final Pattern VALID_EMAIL_ADDRESS_REGEX = 
+		    Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+	public static final Pattern VALID_PHONE_REGEX = 
+			Pattern.compile("^[1-9][0-9]{10}");
 	ListView<Contact> LeftlistView = new ListView<Contact>();
 	ListView<String> RightlistView = new ListView<String>();
 	private static ContactBook cb;
@@ -233,7 +242,7 @@ public class UI extends Application {
 		popup.getIcons().add(new Image("file:cbicon.png"));
 		GridPane MainPane = new GridPane();
 		MainPane.setPadding(new Insets(10));
-
+		
 		Label FName = new Label("First Name");
 		TextField TXFNAME = new TextField();
 		TXFNAME.setPromptText("Bruce");
@@ -246,17 +255,34 @@ public class UI extends Application {
 		Label PhoneNumber = new Label("Phone Number");
 		TextField TXPHONENUMBER = new TextField();
 		TXPHONENUMBER.setPromptText("9891234567");
-
+		
+		BooleanBinding bb = new BooleanBinding() {
+		    {
+		        super.bind(TXFNAME.textProperty(),
+		        		   TXLNAME.textProperty(),
+		        		   TXEMAIL.textProperty(),
+		        		   TXPHONENUMBER.textProperty());
+		    }
+		    @Override
+		    protected boolean computeValue() {
+		        return (TXFNAME.getText().isEmpty())
+		                || (TXLNAME.getText().isEmpty())
+		                || (TXEMAIL.getText().isEmpty())
+		                || (TXPHONENUMBER.getText().isEmpty());
+		    }
+		};
+		
 		Button FinalizeAdd = new Button("Done");
+		FinalizeAdd.disableProperty().bind(bb);
+		
 		if (c.FirstName != null) {
-
 			TXFNAME.setText(c.FirstName.trim());
 			TXLNAME.setText(c.LastName.trim());
 			TXEMAIL.setText(c.Email.trim());
 			TXPHONENUMBER.setText(c.PhoneNumber.trim());
 			cb.removefromBookandFile(c);
 		}
-
+		
 		FinalizeAdd.setOnAction((event) -> {
 			String txfFirstName = TXFNAME.getText();
 			String txfLastName = TXLNAME.getText();
@@ -273,7 +299,6 @@ public class UI extends Application {
 				UserMessage("Confirmation", person.FirstName + " " + person.LastName + " has been Added");
 
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
@@ -296,7 +321,22 @@ public class UI extends Application {
 		popup.setScene(scene);
 		popup.show();
 	}
-
+	
+//	public static boolean validateName(String name) {
+//		Matcher matcher = VALID_NAME_REGEX.matcher(name);
+//		return matcher.find();
+//	}
+//	
+//	public static boolean validateEmail(String email) {
+//		Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(email);
+//		return matcher.find();
+//	}
+//	
+//	public static boolean validatePhoneNumber(String phoneNumber) {
+//		Matcher matcher = VALID_PHONE_REGEX.matcher(phoneNumber);
+//		return matcher.find();
+//	}
+	
 	public void UserMessage(String Title, String message) {
 		Stage s = new Stage();
 		s.getIcons().add(new Image("file:cbicon.png"));
@@ -371,18 +411,12 @@ public class UI extends Application {
 					
 					rightcell.setTextAlignment(TextAlignment.CENTER);
 					
-					
-					
 					return rightcell;
 					
 				}
 			});
 		}
 		}
-			
-		
-		
-
 }
 
 
