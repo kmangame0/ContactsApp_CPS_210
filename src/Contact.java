@@ -1,9 +1,3 @@
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Scanner;
 
 public class Contact{
 
@@ -29,7 +23,7 @@ public class Contact{
 		return Email;
 	}
 
-	public Contact(String FirstName, String LastName, String Email, String PhoneNumber) throws IOException{
+	public Contact(String FirstName, String LastName, String Email, String PhoneNumber) {
 		this.FirstName = FirstName;
 		this.LastName = LastName;
 		this.PhoneNumber = PhoneNumber;
